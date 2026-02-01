@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "@apollo/client";
 import { ADD_ITEM_MUTATION, GET_TODO_LIST } from "../../queries/itens";
 import List from "@mui/material/List";
-import { Button, TextField } from "@mui/material";
-import { Refresh } from "@mui/icons-material";
+import { Button, TextField, Fab } from "@mui/material";
+import { Refresh, ArrowBack } from "@mui/icons-material";
 
 import { useEffect, useState } from "react";
 import { getOperationName } from "@apollo/client/utilities";
@@ -14,12 +14,13 @@ import {
 } from "../../styles/comps-list";
 import { ItemToDo } from "./item";
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const ERROR_MESSAGE_TIMEOUT = 10000;
 const DEFAULT_MESSAGE_TIMEOUT = 5000;
 
 export default function CheckboxList() {
+	const navigate = useNavigate();
 	const params = useParams();
 	const [item, setItem] = useState("");
 	const [error, setError] = useState(null);
@@ -86,6 +87,17 @@ export default function CheckboxList() {
 
 	return (
 		<div className="App-header">
+			<Fab
+				color="primary"
+				sx={{
+					position: 'fixed',
+					left: 32,
+					top: 32,
+					borderRadius: '8px'
+				}}
+				onClick={() => navigate("/")}
+			> <ArrowBack /> </Fab>
+
 			<Container>
 				<ContainerCard>
 					<Title>TODO LIST</Title>
