@@ -124,6 +124,8 @@ export function ItemToDo({ value }) {
 						onChange={(e) => setEditedName(e.target.value)}
 						type="text"
 						variant="standard"
+						error={!!error}
+						helperText={error}
 					/>
 					{/* Botão de salvar */}
 					<Button
@@ -146,8 +148,5 @@ export function ItemToDo({ value }) {
 				</>
 			}
 		</ListItemButton>
-		{
-			error && <ContainerError>{error}</ContainerError>
-		}
 	</ListItem >
 }
