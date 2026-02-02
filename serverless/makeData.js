@@ -1,5 +1,5 @@
-const TODO_LIST = [{ id: 1, name: "Item 1" }];
+const TODO_LISTS = [];
 
 module.exports = {
-	TODO_LIST,
+	TODO_LISTS,
 };

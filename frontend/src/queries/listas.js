@@ -28,6 +28,20 @@ export const ADD_TODO_LIST_MUTATION = gql`
 	}
 `;
 
+// Atualiza uma lista
+export const UPDATE_TODO_LIST_MUTATION = gql`
+	mutation updateTodoList($id: Int!, $name: String!) {
+		updateTodoList(id: $id, name: $name) {
+			id
+			name
+			items {
+				id
+				name
+			}
+		}
+	}
+`;
+
 // Remove uma lista
 export const DELETE_TODO_LIST_MUTATION = gql`
 	mutation deleteTodoList($id: Int!) {

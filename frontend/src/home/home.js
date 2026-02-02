@@ -1,13 +1,18 @@
 import { Link } from "react-router-dom";
-import { Add, Delete, Edit } from "@mui/icons-material";
+import { Add, Delete } from "@mui/icons-material";
 import { Fab, Modal, Fade, Box, Typography, Backdrop, TextField, Button, IconButton } from "@mui/material";
 import { useMutation, useQuery } from "@apollo/client";
 import { getOperationName } from "@apollo/client/utilities";
-import { GridContainer, Header, Main, Card, CardActions } from "../../styles/comps-home";
+import {
+	GridContainer,
+	Header,
+	Main,
+	Card
+} from "../styles/comps-home";
 import { useState, useContext } from "react";
-import { GET_TODO_LISTS, ADD_TODO_LIST_MUTATION, DELETE_TODO_LIST_MUTATION, UPDATE_TODO_LIST_MUTATION } from "../../queries/listas";
-import { DefaultContext } from "../../context/ctx";
-import DialogWrapper from "../../util/dialog-wrapper";
+import { GET_TODO_LISTS, ADD_TODO_LIST_MUTATION, DELETE_TODO_LIST_MUTATION } from "../queries/listas";
+import { DialogContext } from "../dialog/dialog-ctx";
+import DialogWrapper from "../dialog/dialog-wrapper";
 
 const modalStyle = {
 	position: 'absolute',
@@ -22,15 +27,12 @@ const modalStyle = {
 };
 
 export default function Home() {
-	const [isEdit, setIsEdit] = useState({ status: false, data: null });
 	const [open, setOpen] = useState(false);
-
 	const [listName, setListName] = useState("");
 	const [error, setError] = useState(null);
-	const { setCtxData, ctxData } = useContext(DefaultContext);
+	const { setData: setDialogData, data: hasCtxData } = useContext(DialogContext);
 	const { data, loading } = useQuery(GET_TODO_LISTS);
 
-	// Request para adicionar uma nova lista
 	const [addTodoList] = useMutation(ADD_TODO_LIST_MUTATION, {
 		awaitRefetchQueries: true,
 		refetchQueries: [getOperationName(GET_TODO_LISTS)],
@@ -39,7 +41,6 @@ export default function Home() {
 		}
 	});
 
-	// Request para remover uma lista 
 	const [deleteTodoList] = useMutation(DELETE_TODO_LIST_MUTATION, {
 		awaitRefetchQueries: true,
 		refetchQueries: [getOperationName(GET_TODO_LISTS)],
@@ -48,24 +49,9 @@ export default function Home() {
 		}
 	});
 
-	// Request para atualizar uma lista
-	const [editTodoList] = useMutation(UPDATE_TODO_LIST_MUTATION, {
-		awaitRefetchQueries: true,
-		refetchQueries: [getOperationName(GET_TODO_LISTS)],
-		onError: (error) => {
-			setError(error.message);
-		}
-	});
-
-	// Evento de salvar disparado pelo modal
 	const handleSave = async () => {
 		if (!listName.trim()) {
 			setError("O nome da lista não pode estar vazio!");
-			return;
-		}
-
-		if (isEdit.status) {
-			handleEditSave();
 			return;
 		}
 
@@ -78,56 +64,21 @@ export default function Home() {
 			}
 		});
 	};
-	// Nos casos de ser uma edição de nome de uma lista cai nessa função para atualização dos dados
-	const handleEditSave = async () => {
-		await editTodoList({
-			variables: { id: isEdit.data.id, name: listName },
-			onCompleted: () => {
-				setListName("");
-				setError(null);
-				setOpen(false);
-			},
-			onError: (error) => {
-				setError(error.message);
-			}
-		});
-	};
 
-	// Evento de cancelar disparado pelo modal, fecha o modal e limpa os campos
 	const handleCancel = () => {
 		setListName("");
 		setError(null);
 		setOpen(false);
-		if (isEdit.status) {
-			setIsEdit({ status: false, data: null });
-		}
 	};
 
-	// Evento disparado pelo botão de deletar, abre um dialog para confirmar a exclusão
 	const handleDelete = async (id) => {
-		setCtxData((prev) => (
-			{
-				...prev,
-				dialog: {
-					title: "Confirmar exclusão",
-					message: "Deseja realmente deletar esta lista?",
-					buttons: {
-						confirm: () => {
-							deleteTodoList({ variables: { id } });
-							setCtxData((prev) => ({ ...prev, dialog: false }));
-						}
-					}
-				}
+		setDialogData({
+			title: "Confirmar exclusão",
+			message: "Deseja realmente deletar esta lista?",
+			buttons: {
+				confirm: () => deleteTodoList({ variables: { id } })
 			}
-		));
-	};
-
-	// Evento disparado pelo botão de editar de um card, abre o modal mas em modo de edição
-	const handleEdit = async (id) => {
-		const registro = data?.todoLists?.find((list) => list.id === id);
-		setIsEdit({ status: true, data: registro });
-		setListName(registro.name);
-		setOpen(true);
+		});
 	};
 
 	return (
@@ -150,24 +101,23 @@ export default function Home() {
 
 				<Main>
 					{loading && <Typography color="#FFFFFF">Carregando...</Typography>}
-					{!loading && (!data || data?.todoLists?.length === 0) && (
+					{!loading && data?.todoLists?.length === 0 && (
 						<Typography variant="h6" color="#FFFFFF">
 							Nenhuma lista encontrada. Clique no botão + para criar uma nova lista.
 						</Typography>
 					)}
 					{!loading && data?.todoLists?.map((list) => (
 						<Card key={list.id}>
-
-							<Link to={`/list/${list.id}`} state={{ name: list.name }}>{list.name}</Link>
-							<CardActions>
-								<IconButton color="primary" onClick={() => handleEdit(list.id)}>
-									<Edit />
-								</IconButton>
-								<IconButton
-									color="error"
-									onClick={(e) => handleDelete(list.id)}
-								> <Delete /> </IconButton>
-							</CardActions>
+							<Link to={`/list/${list.id}`}>{list.name}</Link>
+							<IconButton
+								color="error"
+								sx={{
+									position: 'absolute',
+									top: 8,
+									right: 8,
+								}}
+								onClick={(e) => handleDelete(list.id)}
+							> <Delete /> </IconButton>
 						</Card>
 					))}
 				</Main>
@@ -187,7 +137,7 @@ export default function Home() {
 				<Fade in={open}>
 					<Box sx={modalStyle}>
 						<Typography variant="h6" component="h2">
-							{!isEdit.status ? "Adicionar nova todo list" : "Editar nome da lista"}
+							Adicionar nova todo list
 						</Typography>
 
 						<TextField
@@ -202,15 +152,14 @@ export default function Home() {
 						/>
 
 						<Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-							<Button variant="contained" color="success"
-								onClick={() => !isEdit.status ? handleSave() : handleEditSave()}>Salvar</Button>
+							<Button variant="contained" color="success" onClick={handleSave}>Salvar</Button>
 							<Button variant="contained" color="error" onClick={handleCancel}>Cancelar</Button>
 						</Box>
 					</Box>
 				</Fade>
 			</Modal>
 
-			{ctxData.dialog && <DialogWrapper />}
+			{hasCtxData && <DialogWrapper />}
 		</>
 	);
 }
