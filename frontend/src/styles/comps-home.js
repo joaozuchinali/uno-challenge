@@ -42,7 +42,6 @@ const Card = styled.div`
 	justify-content: center;
 	align-items: center;
 	padding: 16px;
-	min-height: 90px;
 	width: 200px;
 	background-color: #dcdcdc;
 	border-radius: 8px;
@@ -66,10 +65,22 @@ const Card = styled.div`
 	}
 `;
 
+const CardActions = styled.div`
+	display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 40px;
+    position: relative;
+`;
+
 
 export {
 	GridContainer,
 	Header,
 	Main,
-	Card
+	Card,
+	CardActions
 }

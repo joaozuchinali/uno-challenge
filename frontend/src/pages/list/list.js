@@ -24,11 +24,13 @@ export default function CheckboxList() {
 	const params = useParams();
 	const [item, setItem] = useState("");
 	const [error, setError] = useState(null);
+
 	const { data, refetch, loading } = useQuery(GET_TODO_LIST, {
 		variables: {
 			id: Number(params.id),
 		},
 	});
+
 	const [addItem] = useMutation(ADD_ITEM_MUTATION, {
 		onError: (error) => {
 			setError({ message: error?.message, timeout: ERROR_MESSAGE_TIMEOUT });
@@ -100,7 +102,7 @@ export default function CheckboxList() {
 
 			<Container>
 				<ContainerCard>
-					<Title>TODO LIST</Title>
+					<Title>{data?.todoList?.name || "TODO LIST"}</Title>
 					<ContainerTop onSubmit={onSubmit}>
 						<ContainerInput>
 							<TextField
@@ -138,15 +140,15 @@ export default function CheckboxList() {
 					</ContainerTop>
 
 					{
-						(!loading && data?.todoList?.length > 0) && <List sx={{ width: "100%" }}>
+						(!loading && data?.todoList?.items?.length > 0) && <List sx={{ width: "100%" }}>
 							<ContainerListItem>
-								{data?.todoList?.map((value) =>
+								{data?.todoList?.items?.map((value) =>
 									<ItemToDo key={value?.id} value={value} />
 								)}
 							</ContainerListItem>
 						</List>
 					}
-					{(!loading && !data?.todoList?.length) && <p>Nenhum item encontrado</p>}
+					{(!loading && !data?.todoList?.items?.length) && <p>Nenhum item encontrado</p>}
 					{loading && <p>Carregando...</p>}
 				</ContainerCard>
 			</Container>
