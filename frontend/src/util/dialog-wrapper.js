@@ -24,12 +24,16 @@ export default function DialogWrapper() {
 				</DialogContentText>
 			</DialogContent>
 			<DialogActions>
-				<Button autoFocus onClick={ctxData.dialog?.buttons?.confirm}>
-					{ctxData.dialog?.buttons?.confirm_label || "Confirmar"}
-				</Button>
-				<Button autoFocus onClick={onClose}>
-					{ctxData.dialog?.buttons?.cancel_label || "Cancelar"}
-				</Button>
+				{
+					ctxData.dialog?.buttons?.confirm && <Button autoFocus onClick={ctxData.dialog?.buttons?.confirm}>
+						{ctxData.dialog?.buttons?.confirm_label || "Confirmar"}
+					</Button>
+				}
+				{
+					ctxData.dialog?.buttons?.close && <Button autoFocus onClick={onClose}>
+						{ctxData.dialog?.buttons?.close_label || "Fechar"}
+					</Button>
+				}
 			</DialogActions>
 		</Dialog>
 	)

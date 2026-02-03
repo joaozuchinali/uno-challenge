@@ -35,7 +35,8 @@ export default function Home() {
 		awaitRefetchQueries: true,
 		refetchQueries: [getOperationName(GET_TODO_LISTS)],
 		onError: (error) => {
-			setError(error.message);
+			const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+			setError(errorMessage);
 		}
 	});
 
@@ -44,7 +45,8 @@ export default function Home() {
 		awaitRefetchQueries: true,
 		refetchQueries: [getOperationName(GET_TODO_LISTS)],
 		onError: (error) => {
-			setError(error.message);
+			const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+			setError(errorMessage);
 		}
 	});
 
@@ -53,9 +55,22 @@ export default function Home() {
 		awaitRefetchQueries: true,
 		refetchQueries: [getOperationName(GET_TODO_LISTS)],
 		onError: (error) => {
-			setError(error.message);
+			const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+			setError(errorMessage);
 		}
 	});
+
+	// Função para abrir o dialog
+	const showDialog = (title, message, buttons) => {
+		setCtxData((prev) => ({
+			...prev,
+			dialog: {
+				title,
+				message,
+				buttons
+			}
+		}));
+	}
 
 	// Evento de salvar disparado pelo modal
 	const handleSave = async () => {
@@ -88,7 +103,8 @@ export default function Home() {
 				setOpen(false);
 			},
 			onError: (error) => {
-				setError(error.message);
+				const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+				setError(errorMessage);
 			}
 		});
 	};
@@ -105,21 +121,13 @@ export default function Home() {
 
 	// Evento disparado pelo botão de deletar, abre um dialog para confirmar a exclusão
 	const handleDelete = async (id) => {
-		setCtxData((prev) => (
-			{
-				...prev,
-				dialog: {
-					title: "Confirmar exclusão",
-					message: "Deseja realmente deletar esta lista?",
-					buttons: {
-						confirm: () => {
-							deleteTodoList({ variables: { id } });
-							setCtxData((prev) => ({ ...prev, dialog: false }));
-						}
-					}
-				}
-			}
-		));
+		showDialog("Confirmar exclusão", "Deseja realmente deletar esta lista?", {
+			confirm: () => {
+				deleteTodoList({ variables: { id } });
+				setCtxData((prev) => ({ ...prev, dialog: false }));
+			},
+			close: true
+		});
 	};
 
 	// Evento disparado pelo botão de editar de um card, abre o modal mas em modo de edição

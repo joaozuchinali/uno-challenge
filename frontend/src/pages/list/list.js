@@ -25,18 +25,20 @@ export default function CheckboxList() {
 	const [item, setItem] = useState("");
 	const [error, setError] = useState(null);
 
+	// Chamada para o backend de busca de listas
 	const { data, refetch, loading } = useQuery(GET_TODO_LIST, {
 		variables: {
 			id: Number(params.id),
 		},
 	});
 
+	// Chamada para o backend de adição de um novo item
 	const [addItem] = useMutation(ADD_ITEM_MUTATION, {
 		onError: (error) => {
-			setError({ message: error?.message, timeout: ERROR_MESSAGE_TIMEOUT });
+			const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+			setError({ message: errorMessage, timeout: ERROR_MESSAGE_TIMEOUT });
 		}
 	});
-
 
 	// Configuração para esconder o erro depois de um determinado periodo de tempo em ms
 	useEffect(() => {
@@ -49,7 +51,7 @@ export default function CheckboxList() {
 		return () => clearTimeout(timer);
 	}, [error]);
 
-	// Chamada para o backend de adição de um novo item
+	// Função para adicionar um novo item
 	const onSubmit = async (event) => {
 		event.preventDefault();
 
