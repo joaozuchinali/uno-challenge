@@ -20,6 +20,7 @@ export function ItemToDo({ value }) {
 	const [deleteItem] = useMutation(DELETE_ITEM_MUTATION);
 	const { setCtxData } = useContext(DefaultContext);
 
+	// Função para remover o erro depois de 10 segundos
 	useEffect(() => {
 		if (!error) return;
 
@@ -30,18 +31,24 @@ export function ItemToDo({ value }) {
 		return () => clearTimeout(timer);
 	}, [error]);
 
-	// Abre o alerta de confirmação de exclusão
-	const onDeleteConfirm = () => {
+	// Função para abrir o dialog
+	const showDialog = (title, message, buttons) => {
 		setCtxData((prev) => ({
 			...prev,
 			dialog: {
-				title: "Confirmar exclusão",
-				message: "Deseja realmente deletar este item?",
-				buttons: {
-					confirm: () => onDelete(value?.id)
-				}
+				title,
+				message,
+				buttons
 			}
 		}));
+	}
+
+	// Abre o alerta de confirmação de exclusão
+	const onDeleteConfirm = () => {
+		showDialog("Confirmar exclusão", "Deseja realmente deletar este item?", {
+			confirm: () => onDelete(value?.id),
+			close: true
+		});
 	}
 
 	// Deleta o item selecionado
@@ -53,7 +60,12 @@ export function ItemToDo({ value }) {
 			awaitRefetchQueries: true,
 			refetchQueries: [getOperationName(GET_TODO_LIST)],
 			onError: (error) => {
-				setError(error?.message);
+				const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+
+				// Mostra um alerta de erro em caso de falha na exclusão
+				showDialog("Erro", errorMessage, {
+					close: true
+				});
 			},
 			onCompleted: () => {
 				setCtxData((prev) => ({
@@ -91,7 +103,8 @@ export function ItemToDo({ value }) {
 				setIsEditing(false);
 			},
 			onError: (error) => {
-				setError(error?.message);
+				const errorMessage = error.graphQLErrors?.[0]?.message || error.message;
+				setError(errorMessage);
 			}
 		});
 	};
@@ -104,6 +117,7 @@ export function ItemToDo({ value }) {
 			marginBottom: "5px",
 			flexDirection: "column",
 			alignItems: "stretch",
+			minHeight: "64px"
 		}}
 	>
 		<ListItemButton dense sx={{ gap: "10px" }}>
